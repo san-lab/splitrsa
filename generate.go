@@ -16,26 +16,28 @@ import (
 
 var pattern = "ShamShare"
 
+var threshold = 2
+var shares = 4
+
 func GenerateShares() error {
 	klen := big.NewInt(1)
 	for !isValidLength(klen) {
 		klen = PromptForNumber("RSA key length?", "4096")
 	}
 
-	privkey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privkey, err := rsa.GenerateKey(rand.Reader, int(klen.Int64()))
 	if err != nil {
 		return err
 	}
-	degree := 1
-	treshold := degree + 1
+	//degree := threshold - 1
 	filepat := "Splitkey"
 
-	s, err := gf256.SplitBytes(privkey.D.Bytes(), 4, treshold)
+	s, err := gf256.SplitBytes(privkey.D.Bytes(), shares, threshold)
 	xuuid, err := uuid.NewUUID()
 	for _, sh := range s {
 		filename := fmt.Sprintf("%s%v.json", filepat, sh.Point)
 		filename = PromptForString(fmt.Sprintf("File name for share no %v", sh.Point), filename)
-		pass := []byte(PromptForString("File password", "aaaaaa"))
+		pass := []byte(PromptForPassword("File password"))
 		kdf := "scrypt"
 		encalg := "aes-256-ctr"
 		keyfile := common.Keyfile{}
@@ -51,8 +53,8 @@ func GenerateShares() error {
 		wrapper := Wrapper{}
 		wrapper.N = privkey.PublicKey.N
 		wrapper.E = privkey.PublicKey.E
-		wrapper.Deg = degree
-		wrapper.T = treshold
+		//wrapper.Deg = degree
+		wrapper.T = threshold
 		wrapper.Keyfile = keyfile
 		wrapper.ID = xuuid.String()
 		wrapper.L = klen
@@ -70,9 +72,9 @@ type Wrapper struct {
 	N       *big.Int
 	E       int
 	T       int
-	Deg     int
-	ID      string
-	L       *big.Int
+	//Deg     int
+	ID string
+	L  *big.Int
 }
 
 func PromptForNumber(label, def string) *big.Int {
@@ -95,6 +97,17 @@ func PromptForString(label, def string) string {
 	if err != nil {
 		fmt.Println(err)
 		return def
+	}
+	return res
+
+}
+
+func PromptForPassword(label string) string {
+	pr := promptui.Prompt{Label: label, Mask: '*'}
+	res, err := pr.Run()
+	if err != nil {
+		fmt.Println(err)
+		return "pass" // Default pass, dont show in prompt because its confusing with the mask
 	}
 	return res
 
