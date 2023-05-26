@@ -21,7 +21,7 @@ func PrivPem(privk *rsa.PrivateKey) []byte {
 func PubPem(pubk *rsa.PublicKey) []byte {
 	pemdata := pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PUBLIC KEY",
+			Type:  "PUBLIC KEY",
 			Bytes: x509.MarshalPKCS1PublicKey(pubk),
 		},
 	)
@@ -35,7 +35,7 @@ func PubPemPKIX(pubk *rsa.PublicKey) ([]byte, error) {
 	}
 	pemdata := pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PUBLIC KEY",
+			Type:  "PUBLIC KEY",
 			Bytes: b,
 		},
 	)
