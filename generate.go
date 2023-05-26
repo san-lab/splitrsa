@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/manifoldco/promptui"
@@ -16,25 +17,21 @@ import (
 
 var pattern = "ShamShare"
 
-var threshold = 2
-var shares = 4
-
 func GenerateShares() error {
-	klen := big.NewInt(1)
+	klen := 1
 	for !isValidLength(klen) {
-		klen = PromptForNumber("RSA key length?", "4096")
+		klen = PromptForNumber("RSA key length?", 4096)
 	}
 
-	privkey, err := rsa.GenerateKey(rand.Reader, int(klen.Int64()))
+	privkey, err := rsa.GenerateKey(rand.Reader, klen)
 	if err != nil {
 		return err
 	}
-	SavePubPKIX(&privkey.PublicKey, "rsapkixpub.pem")
-	SavePub(&privkey.PublicKey, "rsapub.pem")
 
+	threshold := PromptForNumber("Quorum (treshold)?", 2)
+	shares := PromptForNumber("Number of shares?", 4)
 	//degree := threshold - 1
 	filepat := "Splitkey"
-	fmt.Println("D:", privkey.D)
 	s, err := gf256.SplitBytes(privkey.D.Bytes(), shares, threshold)
 
 	xuuid, err := uuid.NewUUID()
@@ -68,6 +65,9 @@ func GenerateShares() error {
 		os.WriteFile(filename, b, 0644)
 
 	}
+	pname := PromptForString("File name for the Public Key?", "pubkey")
+	SavePubPKIX(&privkey.PublicKey, pname+"PKIX.pem")
+	SavePub(&privkey.PublicKey, pname+".pem")
 
 	return nil
 }
@@ -79,19 +79,19 @@ type Wrapper struct {
 	T       int
 	Idx     byte
 	ID      string
-	L       *big.Int
+	L       int
 }
 
-func PromptForNumber(label, def string) *big.Int {
-	pr := promptui.Prompt{Label: label, Default: def}
-	v := new(big.Int)
+func PromptForNumber(label string, def int) int {
+	pr := promptui.Prompt{Label: label, Default: fmt.Sprint(def)}
 	for {
 		res, _ := pr.Run()
-		_, ok := v.SetString(res, 10)
-		if ok {
-			return v
+		v, err := strconv.Atoi(res)
+		if err != nil {
+			fmt.Println(err)
+			return def
 		}
-		pr.Default = res
+		return v
 	}
 
 }
@@ -117,8 +117,7 @@ func PromptForPassword(label string) string {
 
 }
 
-func isValidLength(l *big.Int) bool {
-	x := new(big.Int)
-	x.Mod(l, big.NewInt(1024))
-	return x.Cmp(big.NewInt(0)) == 0
+func isValidLength(l int) bool {
+
+	return l%1024 == 0
 }
