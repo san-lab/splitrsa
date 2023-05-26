@@ -14,7 +14,7 @@ const reass = "Reassemble key"
 func TopUI() {
 	for {
 		prompt := promptui.Select{
-			Label: "MPC Node",
+			Label: "SSS",
 			Items: []string{gen, verify, reass, "EXIT"},
 		}
 		_, it, _ := prompt.Run()
@@ -24,7 +24,7 @@ func TopUI() {
 		case verify:
 			NoI()
 		case reass:
-			NoI()
+			ReassemblePrivateKey()
 		case "EXIT":
 			return
 		}

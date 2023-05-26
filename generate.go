@@ -31,15 +31,17 @@ func GenerateShares() error {
 	}
 	//degree := threshold - 1
 	filepat := "Splitkey"
-
+	fmt.Println("D:", privkey.D)
 	s, err := gf256.SplitBytes(privkey.D.Bytes(), shares, threshold)
+
 	xuuid, err := uuid.NewUUID()
 	for _, sh := range s {
 		filename := fmt.Sprintf("%s%v.json", filepat, sh.Point)
 		filename = PromptForString(fmt.Sprintf("File name for share no %v", sh.Point), filename)
 		pass := []byte(PromptForPassword("File password"))
+
 		kdf := "scrypt"
-		encalg := "aes-256-ctr"
+		encalg := "aes-128-ctr"
 		keyfile := common.Keyfile{}
 		crypto := &keyfile.Crypto
 		crypto.Kdf = kdf
@@ -53,7 +55,7 @@ func GenerateShares() error {
 		wrapper := Wrapper{}
 		wrapper.N = privkey.PublicKey.N
 		wrapper.E = privkey.PublicKey.E
-		//wrapper.Deg = degree
+		wrapper.Idx = sh.Point
 		wrapper.T = threshold
 		wrapper.Keyfile = keyfile
 		wrapper.ID = xuuid.String()
@@ -72,9 +74,9 @@ type Wrapper struct {
 	N       *big.Int
 	E       int
 	T       int
-	//Deg     int
-	ID string
-	L  *big.Int
+	Idx     byte
+	ID      string
+	L       *big.Int
 }
 
 func PromptForNumber(label, def string) *big.Int {
@@ -99,7 +101,6 @@ func PromptForString(label, def string) string {
 		return def
 	}
 	return res
-
 }
 
 func PromptForPassword(label string) string {
