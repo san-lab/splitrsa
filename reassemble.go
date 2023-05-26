@@ -18,8 +18,21 @@ func ReassemblePrivateKey() error {
 	// Pick files and prompt for passwords
 	for {
 		shareWrapper, err := ReadShare()
+		if err != nil {
+			fmt.Println(err)
+		}
+		//b, _ := json.MarshalIndent(shareWrapper, " ", " ")
+		//os.WriteFile("test-file", b, 0644)
+
 		pass := []byte(PromptForPassword("Password"))
-		shareRaw, err := common.DecryptAES(&(shareWrapper.Keyfile), pass)
+		keyfile := shareWrapper.Keyfile
+		fmt.Println(keyfile.Crypto.KdfScryptParams.N)
+		err = DecryptKeyfile(&keyfile, pass)
+		if err != nil {
+			fmt.Println(err)
+		}
+		shareRaw := keyfile.Plaintext
+		//shareRaw, err := common.DecryptAES(&(shareWrapper.Keyfile), pass)
 		if err != nil {
 			fmt.Println("Wrong password")
 			return err // Handle better than this!
@@ -53,6 +66,9 @@ func ReadShare() (*Wrapper, error) {
 	}
 	file := &Wrapper{}
 	err = json.Unmarshal(data, file)
+
+	file.Keyfile.UnmarshalKdfJSON()
+
 	return file, err
 }
 
@@ -62,4 +78,18 @@ func fileExists(name string) bool {
 	_, err = os.Stat(file)
 	fmt.Println(file)
 	return err == nil
+}
+
+func DecryptKeyfile(kf *common.Keyfile, pass []byte) (err error) {
+	key, err := kf.KeyFromPass(pass)
+	if err != nil {
+		return
+	}
+	fmt.Println("Verifying MAC...")
+	err = kf.VerifyMAC(key)
+	if err != nil {
+		return
+	}
+	kf.Plaintext, err = common.Decrypt(kf, key)
+	return
 }
