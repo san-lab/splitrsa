@@ -3,9 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/x509"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"math/big"
 	"os"
@@ -31,16 +29,8 @@ func GenerateShares() error {
 	if err != nil {
 		return err
 	}
-	pubkey := privkey.PublicKey
-	pubkeyBytes := x509.MarshalPKCS1PublicKey(&pubkey)
-	block := &pem.Block{
-		Type:  "RSA PUBLIC KEY",
-		Bytes: pubkeyBytes,
-	}
-
-	if err := pem.Encode(os.Stdout, block); err != nil {
-		fmt.Println(err)
-	}
+	SavePubPKIX(&privkey.PublicKey, "rsapkixpub.pem")
+	SavePub(&privkey.PublicKey, "rsapub.pem")
 
 	//degree := threshold - 1
 	filepat := "Splitkey"

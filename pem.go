@@ -4,6 +4,8 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
+	"os"
 )
 
 func PrivPem(privk *rsa.PrivateKey) []byte {
@@ -38,4 +40,19 @@ func PubPemPKIX(pubk *rsa.PublicKey) ([]byte, error) {
 		},
 	)
 	return pemdata, nil
+}
+
+func SavePub(key *rsa.PublicKey, filename string) {
+	os.WriteFile(filename, PubPem(key), 0644)
+	return
+}
+
+func SavePubPKIX(key *rsa.PublicKey, filename string) {
+	b, err := PubPemPKIX(key)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	os.WriteFile(filename, b, 0644)
+	return
 }
