@@ -41,12 +41,12 @@ func TestDecrypt(t *testing.T) {
 	}
 	pass := []byte("aaaaaa")
 	kdf := "scrypt"
-	encalg := "aes-128-ctr"
-	keyfile := common.Keyfile{}
+	encalg := "aes-256-ctr"
+	keyfile := &common.Keyfile{}
 	crypto := &keyfile.Crypto
 	crypto.Kdf = kdf
 	crypto.Cipher = encalg
-	err = common.EncryptAES(&keyfile, privkey.D.Bytes(), pass)
+	err = common.EncryptAES(keyfile, privkey.D.Bytes(), pass)
 	if err != nil {
 		t.Error(err)
 	}
@@ -58,13 +58,14 @@ func TestDecrypt(t *testing.T) {
 	if err != nil {
 		t.Error("Wrong MAC")
 	}
-	b, err := common.Decrypt(&keyfile, key)
+	keyfile.Decrypt(pass)
+	b, err := common.Decrypt(keyfile, key)
 	if err != nil {
 		t.Error(err)
 	}
 	D1 := new(big.Int).SetBytes(b)
 	if privkey.D.Cmp(D1) != 0 {
-		t.Errorf("Wrong D recovered: /n%v/n%v", privkey.D, D1)
+		t.Errorf("Wrong D recovered: \n%v\n%v", privkey.D, D1)
 	}
 
 }
