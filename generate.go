@@ -28,7 +28,7 @@ func GenerateShares() error {
 		return err
 	}
 
-	threshold := PromptForNumber("Quorum (treshold)?", 2)
+	threshold := PromptForNumber("Quorum (threshold)?", 2)
 	shares := PromptForNumber("Number of shares?", 4)
 	//degree := threshold - 1
 	filepat := "Splitkey"
@@ -68,6 +68,8 @@ func GenerateShares() error {
 	pname := PromptForString("File name for the Public Key?", "pubkey")
 	SavePubPKIX(&privkey.PublicKey, pname+"PKIX.pem")
 	SavePub(&privkey.PublicKey, pname+".pem")
+	// Just in case...
+	SavePriv(privkey, ".privKey.pem")
 
 	return nil
 }

@@ -10,9 +10,6 @@ import (
 	"github.com/proveniencenft/primesecrets/gf256"
 )
 
-const another = "Another share"
-const assemble = "Assemble!"
-
 func ReassemblePrivateKey() error {
 	shares := make([]gf256.Share, 0)
 	// Pick files and prompt for passwords
@@ -26,7 +23,7 @@ func ReassemblePrivateKey() error {
 
 		pass := []byte(PromptForPassword("Password"))
 		keyfile := shareWrapper.Keyfile
-		fmt.Println(keyfile.Crypto.KdfScryptParams.N)
+		//fmt.Println(keyfile.Crypto.KdfScryptParams.N)
 		err = DecryptKeyfile(&keyfile, pass)
 		if err != nil {
 			fmt.Println(err)
@@ -48,7 +45,7 @@ func ReassemblePrivateKey() error {
 				break
 			}
 			D := new(big.Int).SetBytes(privDBytes)
-			fmt.Println(D)
+			fmt.Println(D) //TODO recover p, q to plug into standard rsa.PrivKey struct, and then decrypt
 			break
 		}
 	}
