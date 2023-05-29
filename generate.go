@@ -22,12 +22,13 @@ func GenerateShares() error {
 	for !isValidLength(klen) {
 		klen = PromptForNumber("RSA key length?", 4096)
 	}
-
+	fmt.Printf("Generating %v-bit RSA key, please, wait...\n", klen)
 	privkey, err := rsa.GenerateKey(rand.Reader, klen)
 	if err != nil {
 		return err
 	}
 
+	fmt.Printf("RSA key generated\n")
 	threshold := PromptForNumber("Quorum (treshold)?", 2)
 	shares := PromptForNumber("Number of shares?", 4)
 	//degree := threshold - 1
@@ -35,6 +36,7 @@ func GenerateShares() error {
 	s, err := gf256.SplitBytes(privkey.D.Bytes(), shares, threshold)
 
 	xuuid, err := uuid.NewUUID()
+	fmt.Println("Share set ID:", xuuid.String())
 	for _, sh := range s {
 		filename := fmt.Sprintf("%s%v.json", filepat, sh.Point)
 		filename = PromptForString(fmt.Sprintf("File name for share no %v", sh.Point), filename)
@@ -68,6 +70,7 @@ func GenerateShares() error {
 	pname := PromptForString("File name for the Public Key?", "pubkey")
 	SavePubPKIX(&privkey.PublicKey, pname+"PKIX.pem")
 	SavePub(&privkey.PublicKey, pname+".pem")
+	fmt.Printf("Public key written to files:\n %s\n%s\n", pname+"PKIX.pem", pname+".pem")
 
 	return nil
 }
