@@ -19,10 +19,6 @@ func TestGenerate(t *testing.T) {
 
 	SavePub(&prk.PublicKey, "testpub.yyy")
 	SavePriv(prk, "testpriv.yyy")
-	prk1 := &rsa.PrivateKey{}
-	prk1.N = prk.N
-	prk1.D = prk.D
-	prk1.PublicKey = prk.PublicKey
 
 	prb := x509.MarshalPKCS1PrivateKey(prk)
 
@@ -32,9 +28,15 @@ func TestGenerate(t *testing.T) {
 	}
 
 	P, Q := Crack(priv.N, big.NewInt(int64(priv.E)), priv.D)
+
+	prk1 := &rsa.PrivateKey{}
+	prk1.N = prk.N
+	prk1.D = prk.D
+	prk1.PublicKey = prk.PublicKey
 	prk1.Primes = []*big.Int{P, Q}
 	prk1.Precompute()
 	fmt.Println(prk.Equal(prk1))
+
 	msg := []byte("Jasio Karuzela")
 	ctx, _ := rsa.EncryptOAEP(sha256.New(), rand.Reader, &prk.PublicKey, msg, nil)
 	ptx, _ := rsa.DecryptOAEP(sha256.New(), rand.Reader, prk1, ctx, nil)
