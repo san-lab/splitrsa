@@ -8,6 +8,10 @@ import (
 	"os"
 )
 
+func a() {
+	fmt.Println("b")
+}
+
 func PrivPem(privk *rsa.PrivateKey) []byte {
 	pemdata := pem.EncodeToMemory(
 		&pem.Block{
@@ -60,4 +64,35 @@ func SavePubPKIX(key *rsa.PublicKey, filename string) {
 	}
 	os.WriteFile(filename, b, 0644)
 	return
+}
+
+func SavePriv(key *rsa.PrivateKey, filename string) {
+	e := os.WriteFile(filename, PrivPem(key), 0644)
+	if e != nil {
+		fmt.Println(e)
+	}
+	return
+}
+
+func ReadPubPEM() *rsa.PublicKey {
+	filename := "not-existing-file" // do better...
+	for !fileExists(filename) {
+		filename = PromptForString(fmt.Sprintf("File name of share"), "")
+	}
+	pubPEMData, err := os.ReadFile(filename)
+	if err != nil {
+		return nil
+	}
+	fmt.Println(string(pubPEMData))
+	block, _ := pem.Decode(pubPEMData)
+	if block == nil || block.Type != "PUBLIC KEY" {
+		fmt.Println("failed to decode PEM block containing public key")
+	}
+
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(pub)
+	return pub.(*rsa.PublicKey)
 }

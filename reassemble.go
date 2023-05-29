@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -45,7 +46,18 @@ func ReassemblePrivateKey() error {
 				break
 			}
 			D := new(big.Int).SetBytes(privDBytes)
-			fmt.Println(D) //TODO recover p, q to plug into standard rsa.PrivKey struct, and then decrypt
+
+			//fmt.Println(D)
+
+			pubK := ReadPubPEM()
+			P, Q := Crack(pubK.N, big.NewInt(int64(pubK.E)), D)
+			prk1 := &rsa.PrivateKey{}
+			prk1.N = pubK.N
+			prk1.D = D
+			prk1.PublicKey = *pubK
+			prk1.Primes = []*big.Int{P, Q}
+			prk1.Precompute()
+			SavePriv(prk1, "assembledPriv.pem")
 			break
 		}
 	}
@@ -55,7 +67,7 @@ func ReassemblePrivateKey() error {
 func ReadShare() (*Wrapper, error) {
 	filename := "not-existing-file" // do better...
 	for !fileExists(filename) {
-		filename = PromptForString(fmt.Sprintf("File name of share"), "")
+		filename = PromptForString(fmt.Sprintf("File name of public key"), "")
 	}
 	data, err := os.ReadFile(filename)
 	if err != nil {

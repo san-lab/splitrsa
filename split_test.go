@@ -14,6 +14,7 @@ import (
 var pass = []byte("aaaaaa")
 
 func TestSplit(t *testing.T) {
+	fmt.Println("Testing SSS split/reassembly")
 	privkey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		fmt.Println(err)
@@ -35,6 +36,7 @@ func TestSplit(t *testing.T) {
 }
 
 func TestDecrypt(t *testing.T) {
+	fmt.Println("Testing encrypt/decrypt")
 	privkey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		fmt.Println(err)
