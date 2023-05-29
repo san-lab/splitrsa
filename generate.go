@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/manifoldco/promptui"
@@ -27,6 +28,8 @@ func GenerateShares() error {
 	if err != nil {
 		return err
 	}
+
+	SavePriv(privkey, fmt.Sprintf(".privkey.%v.pem", time.Now().Unix()))
 
 	fmt.Printf("RSA key generated\n")
 	threshold := PromptForNumber("Quorum (treshold)?", 2)

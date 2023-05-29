@@ -8,6 +8,10 @@ import (
 	"os"
 )
 
+func a() {
+	fmt.Println("b")
+}
+
 func PrivPem(privk *rsa.PrivateKey) []byte {
 	pemdata := pem.EncodeToMemory(
 		&pem.Block{
@@ -54,5 +58,13 @@ func SavePubPKIX(key *rsa.PublicKey, filename string) {
 		return
 	}
 	os.WriteFile(filename, b, 0644)
+	return
+}
+
+func SavePriv(key *rsa.PrivateKey, filename string) {
+	e := os.WriteFile(filename, PrivPem(key), 0644)
+	if e != nil {
+		fmt.Println(e)
+	}
 	return
 }
