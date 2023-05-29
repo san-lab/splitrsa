@@ -68,3 +68,26 @@ func SavePriv(key *rsa.PrivateKey, filename string) {
 	}
 	return
 }
+
+func ReadPubPEM() *rsa.PublicKey {
+	filename := "not-existing-file" // do better...
+	for !fileExists(filename) {
+		filename = PromptForString(fmt.Sprintf("File name of share"), "")
+	}
+	pubPEMData, err := os.ReadFile(filename)
+	if err != nil {
+		return nil
+	}
+	fmt.Println(string(pubPEMData))
+	block, _ := pem.Decode(pubPEMData)
+	if block == nil || block.Type != "PUBLIC KEY" {
+		fmt.Println("failed to decode PEM block containing public key")
+	}
+
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(pub)
+	return pub.(*rsa.PublicKey)
+}
