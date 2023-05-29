@@ -22,7 +22,7 @@ func TopUI() {
 		case gen:
 			GenerateShares()
 		case verify:
-			NoI()
+			VerifyShares()
 		case reass:
 			ReassemblePrivateKey()
 		case "EXIT":

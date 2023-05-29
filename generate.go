@@ -32,7 +32,8 @@ func GenerateShares() error {
 	SavePriv(privkey, fmt.Sprintf(".privkey.%v.pem", time.Now().Unix()))
 
 	fmt.Printf("RSA key generated\n")
-	threshold := PromptForNumber("Quorum (treshold)?", 2)
+	threshold := PromptForNumber("Quorum (threshold)?", 2)
+
 	shares := PromptForNumber("Number of shares?", 4)
 	//degree := threshold - 1
 	filepat := "Splitkey"
@@ -73,6 +74,7 @@ func GenerateShares() error {
 	pname := PromptForString("File name for the Public Key?", "pubkey")
 	SavePubPKIX(&privkey.PublicKey, pname+"PKIX.pem")
 	SavePub(&privkey.PublicKey, pname+".pem")
+
 	fmt.Printf("Public key written to files:\n %s\n%s\n", pname+"PKIX.pem", pname+".pem")
 
 	return nil

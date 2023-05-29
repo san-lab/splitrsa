@@ -51,6 +51,11 @@ func SavePub(key *rsa.PublicKey, filename string) {
 	return
 }
 
+func SavePriv(key *rsa.PrivateKey, filename string) {
+	os.WriteFile(filename, PrivPem(key), 0644)
+	return
+}
+
 func SavePubPKIX(key *rsa.PublicKey, filename string) {
 	b, err := PubPemPKIX(key)
 	if err != nil {
