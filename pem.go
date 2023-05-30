@@ -4,10 +4,9 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
-
-	"github.com/manifoldco/promptui"
 )
 
 func a() {
@@ -71,28 +70,20 @@ func SavePriv(key *rsa.PrivateKey, filename string) {
 	return
 }
 
-func ReadPubPEM() *rsa.PublicKey {
-	fileList, err := FindFilesWithExtension(".pem")
-	prompt := promptui.Select{
-		Label: "SSS",
-		Items: fileList,
-	}
-	_, it, _ := prompt.Run()
-
-	pubPEMData, err := os.ReadFile(it)
-	if err != nil {
-		return nil
-	}
-	fmt.Println(string(pubPEMData))
-	block, _ := pem.Decode(pubPEMData)
+func ParsePubPem(pubPemData []byte) (*rsa.PublicKey, error) {
+	block, _ := pem.Decode(pubPemData)
 	if block == nil || block.Type != "PUBLIC KEY" {
 		fmt.Println("failed to decode PEM block containing public key")
 	}
 
+	// Tries both formats
 	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		fmt.Println(err)
+		pub, err = x509.ParsePKCS1PublicKey(block.Bytes)
+		if err != nil {
+			return nil, errors.New("not a valid public key format!")
+		}
 	}
-	fmt.Println(pub)
-	return pub.(*rsa.PublicKey)
+
+	return pub.(*rsa.PublicKey), nil
 }

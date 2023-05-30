@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/manifoldco/promptui"
 	"github.com/proveniencenft/kmsclitool/common"
 	"github.com/proveniencenft/primesecrets/gf256"
 )
@@ -90,42 +88,6 @@ type Wrapper struct {
 	L       int
 }
 
-func PromptForNumber(label string, def int) int {
-	pr := promptui.Prompt{Label: label, Default: fmt.Sprint(def)}
-	for {
-		res, _ := pr.Run()
-		v, err := strconv.Atoi(res)
-		if err != nil {
-			fmt.Println(err)
-			return def
-		}
-		return v
-	}
-
-}
-
-func PromptForString(label, def string) string {
-	pr := promptui.Prompt{Label: label, Default: def}
-	res, err := pr.Run()
-	if err != nil {
-		fmt.Println(err)
-		return def
-	}
-	return res
-}
-
-func PromptForPassword(label string) string {
-	pr := promptui.Prompt{Label: label, Mask: '*'}
-	res, err := pr.Run()
-	if err != nil {
-		fmt.Println(err)
-		return "pass" // Default pass, dont show in prompt because its confusing with the mask
-	}
-	return res
-
-}
-
 func isValidLength(l int) bool {
-
 	return l%1024 == 0
 }

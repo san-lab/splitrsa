@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/manifoldco/promptui"
 	"github.com/proveniencenft/primesecrets/gf256"
 )
 
@@ -12,19 +11,13 @@ import (
 func VerifyShares() error {
 	shares := make([]gf256.Share, 0)
 	for {
-		prompt := promptui.Select{
-			Label: "SSS",
-			Items: []string{"Input another share", "Verify", "EXIT"},
-		}
-		_, it, _ := prompt.Run()
+		it := PromptFromList([]string{"Input another share", "Verify"}, "SSS")
 		switch it {
 		case "Input another share":
-
-			// Pick files and prompt for passwords
-
 			shareWrapper, err := ReadShare()
 			if err != nil {
 				fmt.Println(err)
+				break
 			}
 
 			pass := []byte(PromptForPassword("Password"))
@@ -40,7 +33,6 @@ func VerifyShares() error {
 			}
 
 			share := gf256.Share{Point: shareWrapper.Idx, Value: shareRaw, Degree: byte(shareWrapper.T - 1)}
-			//fmt.Println(share)
 			shares = append(shares, share)
 
 		case "Verify":
@@ -52,13 +44,21 @@ func VerifyShares() error {
 			if err != nil {
 				fmt.Println(err)
 				break
-			} else {
-				new(big.Int).SetBytes(privDBytes)
-				fmt.Println("All good!")
-				//fmt.Println(D)
-				// TODO calc the rest of the parameters to verify against pubKey
-				break
 			}
+			D := new(big.Int).SetBytes(privDBytes)
+
+			pubK, err := ReadPubKey()
+			if err != nil {
+				return err
+			}
+			prk1, err := D2PrivKey(D, pubK)
+			err = prk1.Validate() // This checks if the pubK contained is consistent with the private values
+			if err != nil {
+				fmt.Println(err)
+				return err
+			}
+			fmt.Println("All good!")
+			break
 
 		case "EXIT":
 			return nil

@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/manifoldco/promptui"
 	"github.com/proveniencenft/kmsclitool/common"
 	"github.com/proveniencenft/primesecrets/gf256"
 )
@@ -22,8 +21,6 @@ func ReassemblePrivateKey() error {
 			fmt.Println(err)
 			break
 		}
-		//b, _ := json.MarshalIndent(shareWrapper, " ", " ")
-		//os.WriteFile("test-file", b, 0644)
 
 		pass := []byte(PromptForPassword("Password"))
 		keyfile := shareWrapper.Keyfile
@@ -33,15 +30,14 @@ func ReassemblePrivateKey() error {
 			fmt.Println(err)
 		}
 		shareRaw := keyfile.Plaintext
-		//shareRaw, err := common.DecryptAES(&(shareWrapper.Keyfile), pass)
 		if err != nil {
 			fmt.Println("Wrong password")
 			return err // Handle better than this!
 		}
 
 		share := gf256.Share{Point: shareWrapper.Idx, Value: shareRaw, Degree: byte(shareWrapper.T - 1)}
-		//fmt.Println(share)
 		shares = append(shares, share)
+
 		if len(shares) == shareWrapper.T {
 			privDBytes, err := gf256.RecoverBytes(shares)
 			if err != nil {
@@ -49,44 +45,27 @@ func ReassemblePrivateKey() error {
 				break
 			}
 			D := new(big.Int).SetBytes(privDBytes)
-
-			//fmt.Println(D)
-
-			pubK := ReadPubPEM()
-			P, Q := Crack(pubK.N, big.NewInt(int64(pubK.E)), D)
-			prk1 := &rsa.PrivateKey{}
-			prk1.N = pubK.N
-			prk1.D = D
-			prk1.PublicKey = *pubK
-			prk1.Primes = []*big.Int{P, Q}
-			prk1.Precompute()
+			pubK, err := ReadPubKey()
+			if err != nil {
+				return err
+			}
+			prk1, err := D2PrivKey(D, pubK)
+			err = prk1.Validate() // This checks if the pubK contained is consistent with the private values
+			if err != nil {
+				fmt.Println(err)
+				return err
+			}
 			SavePriv(prk1, "assembledPriv.pem")
-			// TODO check it matcher pubkey
+			fmt.Println("Key reassembled and saved!")
 			break
 		}
 	}
 	return nil
 }
 
-func FindFilesWithExtension(ext string) ([]string, error) {
-	fileList := make([]string, 0)
-	files, err := os.ReadDir(".")
-	for _, file := range files {
-		if len(file.Name()) >= len(ext) && file.Name()[len(file.Name())-len(ext):] == ext {
-			fileList = append(fileList, file.Name())
-		}
-	}
-	return fileList, err
-}
-
 func ReadShare() (*Wrapper, error) {
 	fileList, err := FindFilesWithExtension(".json")
-	fileList = append(fileList, "EXIT")
-	prompt := promptui.Select{
-		Label: "SSS",
-		Items: fileList,
-	}
-	_, it, _ := prompt.Run()
+	it := PromptFromList(fileList, "SSS")
 	if it == "EXIT" {
 		return nil, errors.New("exited")
 	}
@@ -103,29 +82,15 @@ func ReadShare() (*Wrapper, error) {
 	return file, err
 }
 
-func ReadShare_old() (*Wrapper, error) {
-	filename := "not-existing-file" // do better...
-	for !fileExists(filename) {
-		filename = PromptForString(fmt.Sprintf("File name of public key"), "")
-	}
-	data, err := os.ReadFile(filename)
+func ReadPubKey() (*rsa.PublicKey, error) {
+	fileList, err := FindFilesWithExtension(".pem")
+	pubKPemFile := PromptFromList(fileList, "SSS")
+	pubKPemBytes, err := os.ReadFile(pubKPemFile)
 	if err != nil {
 		return nil, err
 	}
-	file := &Wrapper{}
-	err = json.Unmarshal(data, file)
-
-	file.Keyfile.UnmarshalKdfJSON()
-
-	return file, err
-}
-
-func fileExists(name string) bool {
-	path, err := os.Getwd()
-	file := path + "/" + name
-	_, err = os.Stat(file)
-	fmt.Println(file)
-	return err == nil
+	pubK, err := ParsePubPem(pubKPemBytes)
+	return pubK, err
 }
 
 func DecryptKeyfile(kf *common.Keyfile, pass []byte) (err error) {

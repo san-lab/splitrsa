@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"crypto/rsa"
 	"math/big"
 )
 
@@ -53,4 +54,15 @@ func Crack(N, E, D *big.Int) (*big.Int, *big.Int) {
 
 	return P, Q.Div(N, P)
 
+}
+
+func D2PrivKey(D *big.Int, pubK *rsa.PublicKey) (*rsa.PrivateKey, error) {
+	P, Q := Crack(pubK.N, big.NewInt(int64(pubK.E)), D)
+	prk1 := &rsa.PrivateKey{}
+	prk1.N = pubK.N
+	prk1.D = D
+	prk1.PublicKey = *pubK // The assembled private key will always match public key, so doesnt makes sense to verify
+	prk1.Primes = []*big.Int{P, Q}
+	prk1.Precompute()
+	return prk1, nil
 }
