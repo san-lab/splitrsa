@@ -6,6 +6,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+
+	"github.com/manifoldco/promptui"
 )
 
 func a() {
@@ -70,11 +72,14 @@ func SavePriv(key *rsa.PrivateKey, filename string) {
 }
 
 func ReadPubPEM() *rsa.PublicKey {
-	filename := "not-existing-file" // do better...
-	for !fileExists(filename) {
-		filename = PromptForString(fmt.Sprintf("File name of share"), "")
+	fileList, err := FindFilesWithExtension(".pem")
+	prompt := promptui.Select{
+		Label: "SSS",
+		Items: fileList,
 	}
-	pubPEMData, err := os.ReadFile(filename)
+	_, it, _ := prompt.Run()
+
+	pubPEMData, err := os.ReadFile(it)
 	if err != nil {
 		return nil
 	}

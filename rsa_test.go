@@ -17,8 +17,8 @@ func TestGenerate(t *testing.T) {
 		t.Error(err)
 	}
 
-	SavePub(&prk.PublicKey, "testpub.yyy")
-	SavePriv(prk, "testpriv.yyy")
+	//SavePub(&prk.PublicKey, "testpub.yyy")
+	//SavePriv(prk, "testpriv.yyy")
 
 	prb := x509.MarshalPKCS1PrivateKey(prk)
 

@@ -3,10 +3,12 @@ package main
 import (
 	"crypto/rsa"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
 
+	"github.com/manifoldco/promptui"
 	"github.com/proveniencenft/kmsclitool/common"
 	"github.com/proveniencenft/primesecrets/gf256"
 )
@@ -18,6 +20,7 @@ func ReassemblePrivateKey() error {
 		shareWrapper, err := ReadShare()
 		if err != nil {
 			fmt.Println(err)
+			break
 		}
 		//b, _ := json.MarshalIndent(shareWrapper, " ", " ")
 		//os.WriteFile("test-file", b, 0644)
@@ -58,13 +61,49 @@ func ReassemblePrivateKey() error {
 			prk1.Primes = []*big.Int{P, Q}
 			prk1.Precompute()
 			SavePriv(prk1, "assembledPriv.pem")
+			// TODO check it matcher pubkey
 			break
 		}
 	}
 	return nil
 }
 
+func FindFilesWithExtension(ext string) ([]string, error) {
+	fileList := make([]string, 0)
+	files, err := os.ReadDir(".")
+	for _, file := range files {
+		if len(file.Name()) >= len(ext) && file.Name()[len(file.Name())-len(ext):] == ext {
+			fileList = append(fileList, file.Name())
+		}
+	}
+	return fileList, err
+}
+
 func ReadShare() (*Wrapper, error) {
+	fileList, err := FindFilesWithExtension(".json")
+	fileList = append(fileList, "EXIT")
+	prompt := promptui.Select{
+		Label: "SSS",
+		Items: fileList,
+	}
+	_, it, _ := prompt.Run()
+	if it == "EXIT" {
+		return nil, errors.New("exited")
+	}
+
+	data, err := os.ReadFile(it)
+	if err != nil {
+		return nil, err
+	}
+	file := &Wrapper{}
+	err = json.Unmarshal(data, file)
+
+	file.Keyfile.UnmarshalKdfJSON()
+
+	return file, err
+}
+
+func ReadShare_old() (*Wrapper, error) {
 	filename := "not-existing-file" // do better...
 	for !fileExists(filename) {
 		filename = PromptForString(fmt.Sprintf("File name of public key"), "")

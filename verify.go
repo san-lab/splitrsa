@@ -36,7 +36,7 @@ func VerifyShares() error {
 			shareRaw := keyfile.Plaintext
 			if err != nil {
 				fmt.Println("Wrong password")
-				return err // Handle better than this!
+				break // Handle better than this!
 			}
 
 			share := gf256.Share{Point: shareWrapper.Idx, Value: shareRaw, Degree: byte(shareWrapper.T - 1)}
