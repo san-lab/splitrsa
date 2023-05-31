@@ -14,7 +14,7 @@ func VerifyShares() error {
 		it := PromptFromList([]string{"Input another share", "Verify"}, "Share verification")
 		switch it {
 		case "Input another share":
-			shareWrapper, err := ReadShare()
+			shareWrapper, err := ReadShare("Reassembling an RSA key\nPlease, select the file with the first key share")
 			if err != nil {
 				fmt.Println(err)
 				break

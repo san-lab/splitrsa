@@ -15,8 +15,14 @@ import (
 func ReassemblePrivateKey() error {
 	shares := make([]gf256.Share, 0)
 	// Pick files and prompt for passwords
+	label := "Reassembling an RSA key. Please, select the file with the first key share"
+	t := 0
 	for {
-		shareWrapper, err := ReadShare()
+		if t > 0 {
+			label = fmt.Sprintf("Reassembling an RSA key. Please, select the next file [have %v/%v]", len(shares), t)
+		}
+
+		shareWrapper, err := ReadShare(label)
 		if err != nil {
 			if err.Error() == "exited" {
 				break // Here user just wants to go back
@@ -24,6 +30,7 @@ func ReassemblePrivateKey() error {
 			fmt.Println(err)
 			continue // Otherwise, its better not to reset the shares already provided
 		}
+		t = shareWrapper.T
 
 		pass := []byte(PromptForPassword("Password"))
 		keyfile := shareWrapper.Keyfile
@@ -72,9 +79,9 @@ func ReassemblePrivateKey() error {
 	return nil
 }
 
-func ReadShare() (*Wrapper, error) {
+func ReadShare(label string) (*Wrapper, error) {
 	fileList, err := FindFilesWithExtension(".json")
-	it := PromptFromList(fileList, "Pick a share file")
+	it := PromptFromList(fileList, label)
 	if it == "EXIT" {
 		return nil, errors.New("exited")
 	}
