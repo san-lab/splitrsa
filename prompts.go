@@ -16,7 +16,7 @@ const reass = "Reassemble key"
 func TopUI() {
 	for {
 		prompt := promptui.Select{
-			Label: "SSS",
+			Label: "Main Menu",
 			Items: []string{gen, verify, reass, "EXIT"},
 		}
 		_, it, _ := prompt.Run()

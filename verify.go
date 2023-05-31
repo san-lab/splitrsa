@@ -11,7 +11,7 @@ import (
 func VerifyShares() error {
 	shares := make([]gf256.Share, 0)
 	for {
-		it := PromptFromList([]string{"Input another share", "Verify"}, "SSS")
+		it := PromptFromList([]string{"Input another share", "Verify"}, "Share verification")
 		switch it {
 		case "Input another share":
 			shareWrapper, err := ReadShare()
@@ -25,11 +25,12 @@ func VerifyShares() error {
 			err = DecryptKeyfile(&keyfile, pass)
 			if err != nil {
 				fmt.Println(err)
+				break
 			}
 			shareRaw := keyfile.Plaintext
 			if err != nil {
 				fmt.Println("Wrong password")
-				break // Handle better than this!
+				break
 			}
 
 			share := gf256.Share{Point: shareWrapper.Idx, Value: shareRaw, Degree: byte(shareWrapper.T - 1)}
@@ -37,7 +38,7 @@ func VerifyShares() error {
 
 		case "Verify":
 			if len(shares) == 0 {
-				fmt.Println("not enough shares!")
+				fmt.Println("Not enough shares!")
 				break
 			}
 			privDBytes, err := gf256.RecoverBytes(shares)

@@ -73,7 +73,7 @@ func GenerateShares() error {
 	SavePubPKIX(&privkey.PublicKey, pname+"PKIX.pem")
 	SavePub(&privkey.PublicKey, pname+".pem")
 
-	fmt.Printf("Public key written to files:\n %s\n%s\n", pname+"PKIX.pem", pname+".pem")
+	fmt.Printf("Public key written to files:\n%s\n%s\n", pname+"PKIX.pem", pname+".pem")
 
 	return nil
 }

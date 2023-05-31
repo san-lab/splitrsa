@@ -18,8 +18,11 @@ func ReassemblePrivateKey() error {
 	for {
 		shareWrapper, err := ReadShare()
 		if err != nil {
+			if err.Error() == "exited" {
+				break // Here user just wants to go back
+			}
 			fmt.Println(err)
-			break
+			continue // Otherwise, its better not to reset the shares already provided
 		}
 
 		pass := []byte(PromptForPassword("Password"))
@@ -28,21 +31,27 @@ func ReassemblePrivateKey() error {
 		err = DecryptKeyfile(&keyfile, pass)
 		if err != nil {
 			fmt.Println(err)
+			continue
 		}
 		shareRaw := keyfile.Plaintext
 		if err != nil {
 			fmt.Println("Wrong password")
-			return err // Handle better than this!
+			continue
 		}
 
 		share := gf256.Share{Point: shareWrapper.Idx, Value: shareRaw, Degree: byte(shareWrapper.T - 1)}
 		shares = append(shares, share)
 
-		if len(shares) == shareWrapper.T {
-			privDBytes, err := gf256.RecoverBytes(shares)
+		if len(shares) >= shareWrapper.T {
+			privDBytes, err := gf256.RecoverBytes(shares) // TODO FIX BUG? WHEN REPEATED SHARES
+			fmt.Println("err:", err)
 			if err != nil {
-				fmt.Println(err)
-				break
+				if err.Error() == "Not enough shares" {
+					// This means user has input the same shares more than once,
+					// which is fine but dont want to reset the shares already provided
+					continue
+				}
+				break // Idk about the rest of the errors...
 			}
 			D := new(big.Int).SetBytes(privDBytes)
 			pubK, err := ReadPubKey()
@@ -65,7 +74,7 @@ func ReassemblePrivateKey() error {
 
 func ReadShare() (*Wrapper, error) {
 	fileList, err := FindFilesWithExtension(".json")
-	it := PromptFromList(fileList, "SSS")
+	it := PromptFromList(fileList, "Pick a share file")
 	if it == "EXIT" {
 		return nil, errors.New("exited")
 	}
@@ -77,14 +86,14 @@ func ReadShare() (*Wrapper, error) {
 	file := &Wrapper{}
 	err = json.Unmarshal(data, file)
 
-	file.Keyfile.UnmarshalKdfJSON()
+	file.Keyfile.UnmarshalKdfJSON() // Set share metadata
 
 	return file, err
 }
 
 func ReadPubKey() (*rsa.PublicKey, error) {
 	fileList, err := FindFilesWithExtension(".pem")
-	pubKPemFile := PromptFromList(fileList, "SSS")
+	pubKPemFile := PromptFromList(fileList, "Pick a public key file")
 	pubKPemBytes, err := os.ReadFile(pubKPemFile)
 	if err != nil {
 		return nil, err
