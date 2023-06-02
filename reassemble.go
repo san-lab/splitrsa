@@ -14,6 +14,7 @@ import (
 
 func ReassemblePrivateKey() error {
 	shares := make([]gf256.Share, 0)
+	polyId := ""
 	// Pick files and prompt for passwords
 	label := "Reassembling an RSA key. Please, select the file with the first key share"
 	t := 0
@@ -46,8 +47,32 @@ func ReassemblePrivateKey() error {
 			continue
 		}
 
-		share := gf256.Share{Point: shareWrapper.Idx, Value: shareRaw, Degree: byte(shareWrapper.T - 1)}
-		shares = append(shares, share)
+		// Check polyID consistency (match the first share's poly), and share (idx) is not repeated
+		// for better usability, the library is checking as well
+		if len(shares) == 0 {
+			polyId = shareWrapper.ID
+		} else {
+			if polyId != shareWrapper.ID {
+				fmt.Println("This share does not belong to the same set as the previous ones")
+				break
+			}
+		}
+		badShare := false
+		for _, s := range shares {
+			if shareWrapper.Idx == s.Point {
+				fmt.Println("Repeated share!")
+				badShare = true
+			}
+		}
+
+		if !badShare {
+			share := gf256.Share{Point: shareWrapper.Idx, Value: shareRaw, Degree: byte(shareWrapper.T - 1)}
+			shares = append(shares, share)
+		}
+
+		for i, s := range shares {
+			fmt.Println(i, s.Point)
+		}
 
 		if len(shares) >= shareWrapper.T {
 			privDBytes, err := gf256.RecoverBytes(shares) // TODO FIX BUG? WHEN REPEATED SHARES
