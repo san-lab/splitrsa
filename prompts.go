@@ -8,16 +8,35 @@ import (
 	"github.com/manifoldco/promptui"
 )
 
+const rsaui = "RSA SSS"
+const bip32ui = "BIP32"
+const exit = "EXIT"
+
+func TopUI() {
+	sel := promptui.Select{Label: "Select function:", Items: []string{rsaui, bip32ui, exit}}
+	for {
+		_, fn, _ := sel.Run()
+		switch fn {
+		case rsaui:
+			RSAUI()
+		case bip32ui:
+			BIP32()
+		case exit:
+			return
+		}
+	}
+}
+
 const up = "Up"
 const gen = "Generate split"
 const verify = "Verify shares"
 const reass = "Reassemble key"
 
-func TopUI() {
+func RSAUI() {
 	for {
 		prompt := promptui.Select{
 			Label: "Main Menu",
-			Items: []string{gen, verify, reass, "EXIT"},
+			Items: []string{gen, verify, reass, up},
 		}
 		_, it, _ := prompt.Run()
 		switch it {
@@ -27,7 +46,7 @@ func TopUI() {
 			VerifyShares()
 		case reass:
 			ReassemblePrivateKey()
-		case "EXIT":
+		case up:
 			return
 		}
 
