@@ -29,7 +29,7 @@ func BIP32() {
 			keystring = currentKey.B58Serialize()
 			items = []string{setb32, privhex, chainhex, derive32, up}
 		}
-		sel := promptui.Select{Label: fmt.Sprintf("BIP32 for %s", keystring)}
+		sel := promptui.Select{Label: Lbl(fmt.Sprintf("BIP32 for %s", keystring))}
 
 		sel.Items = items
 		_, fn, _ := sel.Run()
@@ -39,9 +39,9 @@ func BIP32() {
 		case setb32:
 			SetB32Key()
 		case privhex:
-			fmt.Println(hex.EncodeToString(currentKey.Key))
+			fmt.Println(RedBIt(hex.EncodeToString(currentKey.Key)))
 		case chainhex:
-			fmt.Println(hex.EncodeToString(currentKey.ChainCode))
+			fmt.Println(GreenIt(hex.EncodeToString(currentKey.ChainCode)))
 		case derive32:
 			DeriveBIP32()
 		}
@@ -89,10 +89,11 @@ func DeriveBIP32() {
 
 	}
 	//TODO handle nil
-	fmt.Printf("Derivation path:\t  %s\n", prettypath)
-	fmt.Printf("Derived key in base58:\t  %s\n", nextKey.B58Serialize())
-	fmt.Printf("Derived key in hex:\t  %s\n", hex.EncodeToString(nextKey.Key))
-	fmt.Printf("Ethereum address:\t  %s\n", toAddress(nextKey.Key))
+	fmt.Printf("Derivation path:\t %s\n", prettypath)
+	fmt.Printf("Derived key in base58:\t %s\n", nextKey.B58Serialize())
+	//RedPrintf("Derived key in hex:\t  %s\n", hex.EncodeToString(nextKey.Key))
+	fmt.Println("Derived key in hex:\t", RedBIt(hex.EncodeToString(nextKey.Key)))
+	fmt.Println("Ethereum address:\t", GreenIt(toAddress(nextKey.Key)))
 
 }
 
@@ -101,6 +102,8 @@ var pathregex = regexp.MustCompile("[0-9]+")
 func GetDerivationPath() []uint32 {
 	path := []uint32{}
 	pr := promptui.Prompt{Label: "Derivation path (/x/y/z/..)"}
+	template := "\033[1;31m{.}\033[0m"
+	pr.Templates = &promptui.PromptTemplates{Prompt: template}
 	rawpath, _ := pr.Run()
 	vs := pathregex.FindAllString(rawpath, -1)
 	for _, ns := range vs {

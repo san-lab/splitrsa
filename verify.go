@@ -55,10 +55,10 @@ func VerifyShares() error {
 			prk1, err := D2PrivKey(D, pubK)
 			err = prk1.Validate() // This checks if the pubK contained is consistent with the private values
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println(RedBIt("Error in share validation:", err))
 				return err
 			}
-			fmt.Println("All good!")
+			fmt.Println(GreenBIt("All good!"))
 			break
 
 		case "EXIT":

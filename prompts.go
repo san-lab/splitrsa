@@ -10,10 +10,11 @@ import (
 
 const rsaui = "RSA SSS"
 const bip32ui = "BIP32"
-const exit = "EXIT"
+
+var exit = CFormat("exit", &Yellow, nil)
 
 func TopUI() {
-	sel := promptui.Select{Label: "Select function:", Items: []string{rsaui, bip32ui, exit}}
+	sel := promptui.Select{Label: Lbl("Select function:"), Items: []string{rsaui, bip32ui, exit}}
 	for {
 		_, fn, _ := sel.Run()
 		switch fn {
@@ -27,7 +28,12 @@ func TopUI() {
 	}
 }
 
-const up = "Up"
+func Lbl(m string) string {
+	return CFormat(m, &Cyan, &Bold)
+}
+
+var up = CFormat("up", &Yellow, &Underline)
+
 const gen = "Generate split"
 const verify = "Verify shares"
 const reass = "Reassemble key"
@@ -35,7 +41,7 @@ const reass = "Reassemble key"
 func RSAUI() {
 	for {
 		prompt := promptui.Select{
-			Label: "Main Menu",
+			Label: Lbl("RSA SSS"),
 			Items: []string{gen, verify, reass, up},
 		}
 		_, it, _ := prompt.Run()
