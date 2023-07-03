@@ -80,3 +80,63 @@ func GreenIt(om string, a ...any) string {
 func GreenBIt(om string, a ...any) string {
 	return CFormat(fmt.Sprintf(om, a...), &Green, &Bold)
 }
+
+// Black
+func BlackIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Black, nil)
+}
+
+// Black bold
+func BlackBIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Black, &Bold)
+}
+
+// Yellow
+func YellowIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Yellow, nil)
+}
+
+// Yellow bold
+func YellowBIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Yellow, &Bold)
+}
+
+// Blue
+func BlueIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Blue, nil)
+}
+
+// Blue bold
+func BlueBIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Blue, &Bold)
+}
+
+// Magenta
+func MagentaIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Magenta, nil)
+}
+
+// Magenta bold
+func MagentaBIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Magenta, &Bold)
+}
+
+// Cyan
+func CyanIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Cyan, nil)
+}
+
+// Cyan bold
+func CyanBIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &Cyan, &Bold)
+}
+
+// White
+func WhiteIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &White, nil)
+}
+
+// White bold
+func WhiteBIt(format string, a ...interface{}) string {
+	return CFormat(fmt.Sprintf(format, a...), &White, &Bold)
+}
